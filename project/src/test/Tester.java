@@ -19,7 +19,7 @@ public class Tester {
 			CLBoilerplate.initCL();
 		}
 		
-		BufferedImage img = BufferedImageFactory.getINT_ARGB(new ImageIcon("res/spuele.jpg").getImage());
+		BufferedImage img = BufferedImageFactory.getINT_ARGB(new ImageIcon("res/baywp.jpg").getImage());
 		
 		DataBufferInt buffer = (DataBufferInt) img.getRaster().getDataBuffer();
 		int[] data = buffer.getData();
@@ -28,6 +28,9 @@ public class Tester {
 		FilterBoxBlur blur = new FilterBoxBlur(CLBoilerplate.getCLInstance());
 		FilterColorchanels color = new FilterColorchanels(CLBoilerplate.getCLInstance());
 		FilterResize resize = new FilterResize(CLBoilerplate.getCLInstance());
+		FilterContrast contrast = new FilterContrast(CLBoilerplate.getCLInstance());
+		FilterMask mask = new FilterMask(CLBoilerplate.getCLInstance());
+		
 		CLBufferInt devicebuffer = null;
 		
 		long time = System.currentTimeMillis();
@@ -45,7 +48,7 @@ public class Tester {
 		
 		resize.setSourceDimensions(img.getWidth(), img.getHeight());
 		
-		img = BufferedImageFactory.getINT_ARGB(5000, 5000);
+		img = BufferedImageFactory.getINT_ARGB(1000, 1000);
 		buffer = (DataBufferInt) img.getRaster().getDataBuffer();
 		data = buffer.getData();
 		
@@ -55,13 +58,30 @@ public class Tester {
 		resize.apply();
 		devicebuffer = resize.getDeviceOutputBuffer();
 		
+		int[] maskbuffer = resize.getHostOutputBuffer(); // for later
+		
+		contrast.setIntensity(0.5f);
+		contrast.setThreshold(80);
+		
+		contrast.setDeviceInputBuffer(devicebuffer);
+		contrast.apply();
+		devicebuffer = contrast.getDeviceOutputBuffer();
+		
+		
 		blur.setDimensions(img.getWidth(), img.getHeight());
-		blur.setRadius(50);
+		blur.setRadius(10);
 		blur.setNumPasses(3);
 		
 		blur.setDeviceInputBuffer(devicebuffer);
 		blur.apply();
 		devicebuffer = blur.getDeviceOutputBuffer();
+		
+//		mask.setHostMaskBuffer(maskbuffer);
+		mask.setDeviceMaskBuffer(devicebuffer);
+		
+		mask.setDeviceInputBuffer(devicebuffer);
+		mask.apply();
+		devicebuffer = mask.getDeviceOutputBuffer();
 		
 		devicebuffer.toHostBuffer(blur.getCLInstance().queue, data);
 		

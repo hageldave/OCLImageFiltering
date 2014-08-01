@@ -4,10 +4,11 @@ __kernel void hblur(__global const int* inValues, __global int* outValues, const
 	const int y = get_global_id(1);
 	const uint i = y*width + x;
 	
-	int a = inValues[i] >> 24 & 0xFF;
-	int r = inValues[i] >> 16 & 0xFF;
-	int g = inValues[i] >> 8 & 0xFF;
-	int b = inValues[i] & 0xFF;
+	int b = inValues[i];
+	int a = (b >> 24) & 0xFF;
+	int r = (b >> 16) & 0xFF;
+	int g = (b >> 8) & 0xFF;
+	b = b & 0xFF;
 	
 	// horizontal blur
 	
@@ -38,10 +39,11 @@ __kernel void vblur(__global const int* inValues, __global int* outValues, const
 	const int y = get_global_id(1);
 	const uint i = y*width + x;
 	
-	int a = inValues[i] >> 24 & 0xFF;
-	int r = inValues[i] >> 16 & 0xFF;
-	int g = inValues[i] >> 8 & 0xFF;
-	int b = inValues[i] & 0xFF;
+	int b = inValues[i];
+	int a = (b >> 24) & 0xFF;
+	int r = (b >> 16) & 0xFF;
+	int g = (b >> 8) & 0xFF;
+	b = b & 0xFF;
 	
 	// vertical blur
 	
