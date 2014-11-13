@@ -148,37 +148,45 @@ public class CLBoilerplate {
 		CLBoilerplate.isClInitialized = true;
 	}
 	
-	public static cl_program getProgram(cl_context context, String source, String buildOptions){
+	public static cl_program getProgram(cl_device_id device, cl_context context, String source, String buildOptions){
 		
 		System.out.println(source);
 		
 		int[] errcode = new int[1];
 		cl_program prog = CL.clCreateProgramWithSource(context, 1, new String[]{source}, null, errcode);
 		
-		if(errcode[0] != CL.CL_SUCCESS){
+		if(errcode[0] != CL.CL_SUCCESS){	
 			throw new RuntimeException("Could not create clProgram with Source. Errorcode: " + errcode[0] );
 		}
 		
 		int status = CL.clBuildProgram(prog, 0, null, buildOptions, null, null);
 		if(status != CL.CL_SUCCESS){
-			throw new RuntimeException("Could not build clProgram. Errorcode: " + status);
+			
+			long logSize[] = new long[1];
+            CL.clGetProgramBuildInfo(prog, device, CL.CL_PROGRAM_BUILD_LOG, 0, null, logSize);
+           
+            byte logData[] = new byte[(int)logSize[0]];
+            CL.clGetProgramBuildInfo(prog, device, CL.CL_PROGRAM_BUILD_LOG, logSize[0], Pointer.to(logData), null);
+            String buildlog = new String(logData, 0, logData.length-1);
+			
+			throw new RuntimeException("Could not build clProgram. Errorcode: " + status + "\n" + buildlog);
 		}
 		return prog;
 	}
 	
-	public static cl_program getProgram(cl_context context, String source){
-		return getProgram(context, source, "");
+	public static cl_program getProgram(cl_device_id device, cl_context context, String source){
+		return getProgram(device, context, source, "");
 	}
 	
 	public static cl_program getProgram(String source, String buildOptions){
-		return getProgram(getContext(), source, buildOptions);
+		return getProgram(getDeviceID(), getContext(), source, buildOptions);
 	}
 	
 	public static cl_program getProgram(String source){
 		return getProgram(source, "");
 	}
 	
-	public static cl_program getProgram(cl_context context, File source, String buildOptions){
+	public static cl_program getProgram(cl_device_id device, cl_context context, File source, String buildOptions){
 		try {
 			Scanner sc = new Scanner(source);
 			StringBuilder sb = new StringBuilder(512);
@@ -188,23 +196,23 @@ public class CLBoilerplate {
 			}
 			sc.close();
 //			System.out.println(sb.toString());
-			return getProgram(context, sb.toString(), buildOptions);
+			return getProgram(device, context, sb.toString(), buildOptions);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 	
-	public static cl_program getProgram(cl_context context, File source){
-		return getProgram(context, source, "");
+	public static cl_program getProgram(cl_device_id device, cl_context context, File source){
+		return getProgram(device, context, source, "");
 	}
 	
 	public static cl_program getProgram(File source, String buildOptions){
-		return getProgram(getContext(), source, buildOptions);
+		return getProgram(getDeviceID(), getContext(), source, buildOptions);
 	}
 	
 	public static cl_program getProgram(File source){
-		return getProgram(getContext(), source);
+		return getProgram(getDeviceID(), getContext(), source);
 	}
 	
 	public static cl_kernel getKernel(cl_program program, String kernelName){
