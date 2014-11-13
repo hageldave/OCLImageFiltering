@@ -23,7 +23,13 @@ public class CLInstance {
 		this.platform = platform;
 	}
 	
-	
-	
-	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof CLInstance){
+			CLInstance inst = (CLInstance) obj;
+			return inst.queue == queue ;//&&  inst.context == context && inst.device == device && inst.platform == platform;
+		} else {
+			return false;
+		}
+	}
 }

@@ -9,14 +9,14 @@ import util.CLInstance;
 import util.EasyKernel;
 import filters.AbstractFilterCLBuffer;
 
-public class FilterGrayscale extends AbstractFilterCLBuffer {
+public class GrayscaleFilter extends AbstractFilterCLBuffer {
 	
 	EasyKernel kernel;
 	
-	public FilterGrayscale(CLInstance clInstance) {
-		setCLInstance(clInstance);
+	public GrayscaleFilter(CLInstance clInstance) {
+		super(clInstance);
 		
-		cl_kernel k = CLBoilerplate.getKernel(CLBoilerplate.getProgram(clInstance.context, getKernelCode()), "grayscale");
+		cl_kernel k = CLBoilerplate.getKernel(CLBoilerplate.getProgram(clInstance.device, clInstance.context, getKernelCode()), "grayscale");
 		kernel = new EasyKernel(k);
 	}
 
@@ -25,7 +25,7 @@ public class FilterGrayscale extends AbstractFilterCLBuffer {
 		this.resetOutput();
 		
 		if(deviceInput == null){
-			deviceInput = new CLBufferInt(hostInput, clInstance.context);
+			deviceInput = new CLBufferInt(hostInput, clInstance);
 		}
 		
 		kernel.setArgumentAt(0, deviceInput.get());

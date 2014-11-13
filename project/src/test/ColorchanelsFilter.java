@@ -11,7 +11,7 @@ import util.CLInstance;
 import util.EasyKernel;
 import filters.AbstractFilterCLBuffer;
 
-public class FilterColorchanels extends AbstractFilterCLBuffer {
+public class ColorchanelsFilter extends AbstractFilterCLBuffer {
 	
 	EasyKernel kernel;
 	int alpha = 0;
@@ -19,10 +19,10 @@ public class FilterColorchanels extends AbstractFilterCLBuffer {
 	int green = 0;
 	int blue=0;
 	
-	public FilterColorchanels(CLInstance clInstance) {
-		setCLInstance(clInstance);
+	public ColorchanelsFilter(CLInstance clInstance) {
+		super(clInstance);
 		
-		cl_kernel k = CLBoilerplate.getKernel(CLBoilerplate.getProgram(clInstance.context, new File("oclKernels/colorchanels.cl")), "colorchanels");
+		cl_kernel k = CLBoilerplate.getKernel(CLBoilerplate.getProgram(clInstance.device, clInstance.context, new File("oclKernels/colorchanels.cl")), "colorchanels");
 		kernel = new EasyKernel(k);
 	}
 
@@ -31,7 +31,7 @@ public class FilterColorchanels extends AbstractFilterCLBuffer {
 		this.resetOutput();
 		
 		if(deviceInput == null){
-			deviceInput = new CLBufferInt(hostInput, clInstance.context);
+			deviceInput = new CLBufferInt(hostInput, clInstance);
 		}
 		
 		kernel.setArgumentAt(0, deviceInput.get());

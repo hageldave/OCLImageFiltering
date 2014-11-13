@@ -1,5 +1,7 @@
 package filters;
 
+import java.awt.Dimension;
+
 import util.CLInstance;
 import CLDatatypes.CLImage2D;
 
@@ -12,10 +14,18 @@ public abstract class AbstractFilterCLImage2D implements IFilterCLImage2D {
 	
 	protected int[] hostOutput = null;
 	protected CLImage2D deviceOutput = null;
+	
+	protected Dimension inputDimension = null;
+	
+	
+	public AbstractFilterCLImage2D(CLInstance clInstance) {
+		this.clInstance = clInstance;
+	}
 
 	@Override
-	public void setHostInputBuffer(int[] buffer) {
+	public void setHostInputBuffer(int[] buffer, Dimension dimension) {
 		this.hostInput = buffer;
+		this.inputDimension = dimension;
 	}
 
 	@Override
@@ -24,18 +34,23 @@ public abstract class AbstractFilterCLImage2D implements IFilterCLImage2D {
 	@Override
 	public int[] getHostOutputBuffer() {
 		if(hostOutput == null && deviceOutput != null){
-			hostOutput = deviceOutput.toHostBuffer(this.clInstance.queue);
+			hostOutput = deviceOutput.toHostBuffer();
 		}
 		return hostOutput;
 	}
 
 	@Override
 	public void setDeviceInputImage(CLImage2D image) {
-		this.deviceInput = image;
+		if(!image.getClInstance().equals(this.clInstance)){
+			this.hostInput = image.toHostBuffer();
+		} else {
+			this.deviceInput = image;
+		}
+		this.inputDimension = new Dimension(image.width, image.height);
 	}
 
 	@Override
-	public CLImage2D getDeviceOutputImage() {
+	public CLImage2D getDeviceOutput() {
 		return deviceOutput;
 	}
 
@@ -50,16 +65,19 @@ public abstract class AbstractFilterCLImage2D implements IFilterCLImage2D {
 		this.deviceOutput = null;
 		this.hostOutput = null;
 	}
-
-	@Override
-	public void setCLInstance(CLInstance instance) {
-		this.clInstance = instance;
-	}
 	
 	@Override
 	public CLInstance getCLInstance() {
 		return clInstance;
 	}
 	
+	@Override
+	public Dimension getOutputDimension() {
+		return this.inputDimension;
+	}
+	
+	public Dimension getInputDimension() {
+		return inputDimension;
+	}
 
 }

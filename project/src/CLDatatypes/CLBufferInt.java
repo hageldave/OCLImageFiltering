@@ -3,9 +3,9 @@ package CLDatatypes;
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
-import org.jocl.cl_command_queue;
-import org.jocl.cl_context;
 import org.jocl.cl_mem;
+
+import util.CLInstance;
 
 public class CLBufferInt {
 	
@@ -13,28 +13,28 @@ public class CLBufferInt {
 	private boolean filled = false;
 	public final int numElements;
 	public final long size;
-	public final cl_context context;
+	public final CLInstance clInstance;
 	public final long clFlags;
 	
-	public CLBufferInt(int[] array, cl_context context) {
-		this(array, context, CL.CL_MEM_READ_WRITE);
+	public CLBufferInt(int[] array, CLInstance clInstance) {
+		this(array, clInstance, CL.CL_MEM_READ_WRITE);
 	}
 	
 	/**
 	 * 
 	 * @param array data to be 
 	 * @param context used to create the buffer
-	 * @param clFlags see {@link CL#clCreateBuffer(cl_context, long, long, Pointer, int[])} 
+	 * @param clInstance with which the buffer is to be created
 	 * @throws RuntimeException when creating buffer fails;
 	 */
-	public CLBufferInt(int[] array, cl_context context, long clFlags) {
+	public CLBufferInt(int[] array, CLInstance clInstance, long clFlags) {
 		this.numElements = array.length;
 		this.size = numElements * Sizeof.cl_int;
-		this.context = context;
+		this.clInstance = clInstance;
 		this.clFlags = clFlags | CL.CL_MEM_COPY_HOST_PTR;
 		
 		int[] errCode = new int[1];
-		this.memObj = CL.clCreateBuffer(context, this.clFlags, size, Pointer.to(array), errCode);
+		this.memObj = CL.clCreateBuffer(clInstance.context, this.clFlags, size, Pointer.to(array), errCode);
 		if(errCode[0] != CL.CL_SUCCESS){
 			throw new RuntimeException("Creating CLBuffer failed. Error code: " + errCode[0]);
 		}
@@ -42,22 +42,22 @@ public class CLBufferInt {
 		this.filled = true;
 	}
 	
-	public CLBufferInt(int numElements, cl_context context, long clFlags){
+	public CLBufferInt(int numElements, CLInstance clInstance, long clFlags){
 		this.numElements = numElements;
 		this.size = numElements * Sizeof.cl_int;
-		this.context = context;
+		this.clInstance = clInstance;
 		this.clFlags = clFlags;
 		
 		int[] errCode = new int[1];
-		this.memObj = CL.clCreateBuffer(context, this.clFlags, size, null, errCode);
+		this.memObj = CL.clCreateBuffer(clInstance.context, this.clFlags, size, null, errCode);
 		if(errCode[0] != CL.CL_SUCCESS){
 			throw new RuntimeException("Creating CLBuffer failed. Error code: " + errCode[0]);
 		}
 		this.filled = false;
 	}
 	
-	public CLBufferInt(int numElements, cl_context context){
-		this(numElements, context, CL.CL_MEM_READ_WRITE);
+	public CLBufferInt(int numElements, CLInstance clInstance){
+		this(numElements, clInstance, CL.CL_MEM_READ_WRITE);
 	}
 	
 	
@@ -69,18 +69,18 @@ public class CLBufferInt {
 		return filled;
 	}
 	
-	public int[] toHostBuffer(cl_command_queue queue){
+	public int[] toHostBuffer(){
 		int[] buffer = new int[numElements];
-		toHostBuffer(queue, buffer);
+		toHostBuffer(buffer);
 		return buffer;
 	}
 	
 	
-	public void toHostBuffer(cl_command_queue queue, int[] buffer){
+	public void toHostBuffer(int[] buffer){
 		if(buffer.length != this.numElements){
 			throw new RuntimeException("Cannot copy to host buffer. Not the same number of elements. Provided:" + buffer.length + " Awaited:" + this.numElements);
 		} else {
-			int errCode = CL.clEnqueueReadBuffer(queue, memObj, true, 0, size, Pointer.to(buffer), 0, null, null);
+			int errCode = CL.clEnqueueReadBuffer(clInstance.queue, memObj, true, 0, size, Pointer.to(buffer), 0, null, null);
 			
 			if(errCode != CL.CL_SUCCESS){
 				throw new RuntimeException("Reading from CLBuffer failed. Error code: " + errCode);
@@ -88,17 +88,21 @@ public class CLBufferInt {
 		}
 	}
 	
-	public void fill(int[] values, cl_command_queue queue){
+	public void fill(int[] values){
 		if(values.length != this.numElements){
 			throw new RuntimeException("Cannot fill buffer. Not the same number of elements. Provided:" + values.length + " Awaited:" + this.numElements);
 		} else {
-			int errCode = CL.clEnqueueWriteBuffer(queue, memObj, true, 0, size, Pointer.to(values), 0, null, null);
+			int errCode = CL.clEnqueueWriteBuffer(clInstance.queue, memObj, true, 0, size, Pointer.to(values), 0, null, null);
 			
 			if(errCode != CL.CL_SUCCESS){
 				throw new RuntimeException("Writing to CLBuffer failed. Error code: " + errCode);
 			}
 			filled = true;
 		}
+	}
+	
+	public CLInstance getClInstance() {
+		return clInstance;
 	}
 	
 }

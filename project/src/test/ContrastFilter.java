@@ -11,16 +11,16 @@ import util.CLInstance;
 import util.EasyKernel;
 import filters.AbstractFilterCLBuffer;
 
-public class FilterContrast extends AbstractFilterCLBuffer {
+public class ContrastFilter extends AbstractFilterCLBuffer {
 	
 	EasyKernel kernel;
 	int threshold = 128;
 	float intensity = 0;
 	
-	public FilterContrast(CLInstance clInstance) {
-		setCLInstance(clInstance);
+	public ContrastFilter(CLInstance clInstance) {
+		super(clInstance);
 		
-		cl_kernel k = CLBoilerplate.getKernel(CLBoilerplate.getProgram(clInstance.context, new File("oclKernels/contrast.cl")), "contrast");
+		cl_kernel k = CLBoilerplate.getKernel(CLBoilerplate.getProgram(clInstance.device, clInstance.context, new File("oclKernels/contrast.cl")), "contrast");
 		kernel = new EasyKernel(k);
 	}
 
@@ -29,7 +29,7 @@ public class FilterContrast extends AbstractFilterCLBuffer {
 		this.resetOutput();
 		
 		if(deviceInput == null){
-			deviceInput = new CLBufferInt(hostInput, clInstance.context);
+			deviceInput = new CLBufferInt(hostInput, clInstance);
 		}
 		
 		kernel.setArgumentAt(0, deviceInput.get());

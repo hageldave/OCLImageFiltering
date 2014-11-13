@@ -1,5 +1,6 @@
 package test;
 
+import java.awt.Dimension;
 import java.io.File;
 
 import org.jocl.CL;
@@ -11,18 +12,20 @@ import util.CLBoilerplate;
 import util.CLInstance;
 import util.EasyKernel;
 import CLDatatypes.CLBufferInt;
+import CLDatatypes.CLImage2D;
 
-public class FilterMask extends AbstractFilterCLBuffer {
+public class MaskFilter extends AbstractFilterCLBuffer {
 
 	EasyKernel kernel;
 	int[] hostMask = null;
-	CLBufferInt deviceMask = null;
+	Dimension maskDimension = null;
+	CLImage2D deviceMask = null;
 	
 	
-	public FilterMask(CLInstance clInstance) {
-		setCLInstance(clInstance);
+	public MaskFilter(CLInstance clInstance) {
+		super(clInstance);
 		
-		cl_program prog = CLBoilerplate.getProgram(clInstance.context, new File("oclKernels/mask.cl"));
+		cl_program prog = CLBoilerplate.getProgram(clInstance.device, clInstance.context, new File("oclKernels/mask.cl"));
 		cl_kernel k = CLBoilerplate.getKernel(prog, "mask");
 		kernel = new EasyKernel(k);
 	}
@@ -32,19 +35,17 @@ public class FilterMask extends AbstractFilterCLBuffer {
 		this.resetOutput();
 		
 		if(deviceInput == null){
-			deviceInput = new CLBufferInt(hostInput, clInstance.context);
+			deviceInput = new CLBufferInt(hostInput, clInstance);
 		}
 		
 		if(deviceMask == null){
-			deviceMask = new CLBufferInt(hostMask, clInstance.context);
-		}
-		
-		if(deviceInput.numElements != deviceMask.numElements){
-			throw new RuntimeException("Cannot apply mask. Number of mask elements does not match number of input buffer elements. Provided:" + deviceMask.numElements + " Awaited:" + deviceInput.numElements);
+			deviceMask = new CLImage2D(hostMask, maskDimension.width, maskDimension.height, clInstance);
 		}
 
 		kernel.setArgumentAt(0, deviceInput.get());
 		kernel.setArgumentAt(1, deviceMask.get());
+		kernel.setArgumentAt(2, inputDimension.width);
+		kernel.setArgumentAt(3, inputDimension.height);
 
 		int errcode = CL.clEnqueueNDRangeKernel(
 				clInstance.queue,
@@ -64,28 +65,36 @@ public class FilterMask extends AbstractFilterCLBuffer {
 		this.resetInput();
 	}
 	
-	public void setHostMaskBuffer(int[] mask){
+	public void setHostMaskBuffer(int[] mask, Dimension maskDimension){
 		this.hostMask = mask;
+		this.maskDimension = maskDimension;
 	}
 	
 	public int[] getHostMaskBuffer() {
 		if(hostMask == null && deviceMask != null){
-			hostMask = deviceMask.toHostBuffer(clInstance.queue);
+			hostMask = deviceMask.toHostBuffer();
 		}
 		return hostMask;
 	}
 	
-	public void setDeviceMaskBuffer(CLBufferInt mask){
-		this.deviceMask = mask;
+	public void setDeviceMaskImage(CLImage2D mask){
+		if(!mask.getClInstance().equals(this.getCLInstance())){
+			this.hostMask = mask.toHostBuffer();
+			this.deviceMask = null;
+		} else {
+			this.deviceMask = mask;
+		}
+		this.maskDimension = new Dimension(mask.width, mask.height);
 	}
 	
-	public CLBufferInt getDeviceMaskBuffer() {
+	public CLImage2D getDeviceMaskBuffer() {
 		return deviceMask;
 	}
 
 	public void resetMask(){
 		this.hostMask = null;
 		this.deviceMask = null;
+		this.maskDimension = null;
 	}
 	
 }

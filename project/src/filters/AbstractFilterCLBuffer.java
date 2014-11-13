@@ -1,5 +1,7 @@
 package filters;
 
+import java.awt.Dimension;
+
 import util.CLInstance;
 import CLDatatypes.CLBufferInt;
 
@@ -12,10 +14,17 @@ public abstract class AbstractFilterCLBuffer implements IFilterCLBuffer {
 	
 	protected int[] hostOutput = null;
 	protected CLBufferInt deviceOutput = null;
+	
+	protected Dimension inputDimension = null;
+	
+	public AbstractFilterCLBuffer(CLInstance clInstance) {
+		this.clInstance = clInstance;
+	}
 
 	@Override
-	public void setHostInputBuffer(int[] buffer) {
+	public void setHostInputBuffer(int[] buffer, Dimension dimension) {
 		this.hostInput = buffer;
+		this.inputDimension = dimension;
 	}
 
 	@Override
@@ -24,19 +33,33 @@ public abstract class AbstractFilterCLBuffer implements IFilterCLBuffer {
 	@Override
 	public int[] getHostOutputBuffer() {
 		if(hostOutput == null && deviceOutput != null){
-			hostOutput = deviceOutput.toHostBuffer(this.clInstance.queue);
+			hostOutput = deviceOutput.toHostBuffer();
 		}
 		return hostOutput;
 	}
 
 	@Override
-	public void setDeviceInputBuffer(CLBufferInt buffer) {
-		this.deviceInput = buffer;
+	public void setDeviceInputBuffer(CLBufferInt buffer, Dimension dimension) {
+		if(!buffer.getClInstance().equals(this.clInstance)){
+			this.hostInput = buffer.toHostBuffer();
+		} else {
+			this.deviceInput = buffer;
+		}
+		this.inputDimension = dimension;
 	}
 
 	@Override
-	public CLBufferInt getDeviceOutputBuffer() {
+	public CLBufferInt getDeviceOutput() {
 		return deviceOutput;
+	}
+	
+	@Override
+	public Dimension getOutputDimension() {
+		return this.inputDimension;
+	}
+	
+	public Dimension getInputDimension() {
+		return inputDimension;
 	}
 
 	@Override
@@ -49,11 +72,6 @@ public abstract class AbstractFilterCLBuffer implements IFilterCLBuffer {
 	public void resetOutput() {
 		this.deviceOutput = null;
 		this.hostOutput = null;
-	}
-
-	@Override
-	public void setCLInstance(CLInstance instance) {
-		this.clInstance = instance;
 	}
 	
 	@Override

@@ -1,6 +1,5 @@
 package test;
 
-import java.awt.Dimension;
 import java.io.File;
 
 import org.jocl.CL;
@@ -13,20 +12,18 @@ import util.CLInstance;
 import util.EasyKernel;
 import CLDatatypes.CLBufferInt;
 
-public class FilterBoxBlur extends AbstractFilterCLBuffer {
+public class BoxBlurFilter extends AbstractFilterCLBuffer {
 
 	EasyKernel hkernel;
 	EasyKernel vkernel;
 	
-	int width = 0;
-	int height = 0;
 	int radius = 0;
 	int numPasses = 1;
 	
-	public FilterBoxBlur(CLInstance clInstance) {
-		setCLInstance(clInstance);
+	public BoxBlurFilter(CLInstance clInstance) {
+		super(clInstance);
 		
-		cl_program prog = CLBoilerplate.getProgram(clInstance.context, new File("oclKernels/boxblur.cl"));
+		cl_program prog = CLBoilerplate.getProgram(clInstance.device, clInstance.context, new File("oclKernels/boxblur.cl"));
 		cl_kernel hk = CLBoilerplate.getKernel(prog, "hblur");
 		cl_kernel vk = CLBoilerplate.getKernel(prog, "vblur");
 		hkernel = new EasyKernel(hk);
@@ -38,25 +35,25 @@ public class FilterBoxBlur extends AbstractFilterCLBuffer {
 		this.resetOutput();
 		
 		if(deviceInput == null){
-			deviceInput = new CLBufferInt(hostInput, clInstance.context);
+			deviceInput = new CLBufferInt(hostInput, clInstance);
 		}
 		
-		deviceOutput = new CLBufferInt(deviceInput.numElements, clInstance.context);
+		deviceOutput = new CLBufferInt(deviceInput.numElements, clInstance);
 		
 		for (int pass = 0; pass < numPasses; pass++) {
 
 			// horizontal blur
 			hkernel.setArgumentAt(0, deviceInput.get());
 			hkernel.setArgumentAt(1, deviceOutput.get());
-			hkernel.setArgumentAt(2, width);
-			hkernel.setArgumentAt(3, height);
+			hkernel.setArgumentAt(2, inputDimension.width);
+			hkernel.setArgumentAt(3, inputDimension.height);
 			hkernel.setArgumentAt(4, radius);
 
 			int errcode = CL.clEnqueueNDRangeKernel(
 					clInstance.queue,
 					hkernel.get(), 
 					2, null, 
-					new long[] { width, height }, 
+					new long[] { inputDimension.width, inputDimension.height}, 
 					null,
 					0, null, null);
 			CL.clFinish(clInstance.queue);
@@ -69,15 +66,15 @@ public class FilterBoxBlur extends AbstractFilterCLBuffer {
 			// vertical blur
 			vkernel.setArgumentAt(0, deviceOutput.get());
 			vkernel.setArgumentAt(1, deviceInput.get()); // swapped buffers
-			vkernel.setArgumentAt(2, width);
-			vkernel.setArgumentAt(3, height);
+			vkernel.setArgumentAt(2, inputDimension.width);
+			vkernel.setArgumentAt(3, inputDimension.height);
 			vkernel.setArgumentAt(4, radius);
 
 			errcode = CL.clEnqueueNDRangeKernel(
 					clInstance.queue,
 					vkernel.get(), 
 					2, null, 
-					new long[] { width, height }, 
+					new long[] { inputDimension.width, inputDimension.height }, 
 					null,
 					0, null, null);
 			CL.clFinish(clInstance.queue);
@@ -91,15 +88,6 @@ public class FilterBoxBlur extends AbstractFilterCLBuffer {
 		deviceOutput = deviceInput; // swap buffers again
 		
 		this.resetInput();
-	}
-	
-	public void setDimensions(int w, int h){
-		this.width = w;
-		this.height = h;
-	}
-	
-	public Dimension getDimensions(){
-		return new Dimension(width, height);
 	}
 	
 	public void setRadius(int radius) {
