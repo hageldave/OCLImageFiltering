@@ -220,4 +220,14 @@ public class CLBoilerplate {
 		return kernel;
 	}
 	
+	public static int getCLMemReferenceCount(cl_mem mem){
+//		long[] infoSize = new long[1];
+//		CL.clGetMemObjectInfo(mem, CL.CL_MEM_REFERENCE_COUNT, 0, null, infoSize);
+		
+		int[] refCount = new int[1];
+		CL.clGetMemObjectInfo(mem, CL.CL_MEM_REFERENCE_COUNT, Sizeof.cl_int, Pointer.to(refCount), null);
+		
+		return refCount[0];
+	}
+	
 }
