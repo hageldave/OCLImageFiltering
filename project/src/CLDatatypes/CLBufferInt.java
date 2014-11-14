@@ -105,4 +105,10 @@ public class CLBufferInt {
 		return clInstance;
 	}
 	
+	@Override
+	protected void finalize() throws Throwable {
+		CL.clReleaseMemObject(this.memObj);
+		super.finalize();
+	}
+	
 }
