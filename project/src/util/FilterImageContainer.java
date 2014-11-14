@@ -110,4 +110,8 @@ public class FilterImageContainer {
 		}
 	}
 	
+	public Dimension getDimension() {
+		return dimension;
+	}
+	
 }

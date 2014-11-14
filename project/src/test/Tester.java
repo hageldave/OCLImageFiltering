@@ -12,6 +12,7 @@ import javax.swing.ImageIcon;
 import util.BufferedImageFactory;
 import util.CLBoilerplate;
 import util.FilterImageContainer;
+import util.ImageFrame;
 
 public class Tester {
 	
@@ -43,9 +44,9 @@ public class Tester {
 		FilterImageContainer filterImage = new FilterImageContainer(data, new Dimension(img.getWidth(), img.getHeight()));
 		
 		long time = System.currentTimeMillis();
-		filterImage = filterImage.apply(filter).apply(color).apply(contrast).apply(resize).apply(blur).apply(mask);
+		filterImage = filterImage.apply(filter).apply(color).apply(contrast).apply(resize).apply(blur);//.apply(mask);
 		
-		img = BufferedImageFactory.getINT_ARGB(blur.getOutputDimension());
+		img = BufferedImageFactory.getINT_ARGB(filterImage.getDimension());
 		buffer = (DataBufferInt) img.getRaster().getDataBuffer();
 		data = buffer.getData();
 		
@@ -54,8 +55,12 @@ public class Tester {
 		time = System.currentTimeMillis() - time;
 		System.out.println(time + " ms");
 		
-		ImageIO.write(img, "png", new File("res/out.png"));
-		System.out.println("saved. done.");
+		ImageFrame frame = new ImageFrame();
+		frame.setImg(img);
+		frame.setVisible(true);
+		
+//		ImageIO.write(img, "png", new File("res/out.png"));
+//		System.out.println("saved. done.");
 	}
 
 }
