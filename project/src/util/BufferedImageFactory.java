@@ -8,8 +8,7 @@ import java.awt.image.ImageObserver;
 
 public class BufferedImageFactory {
 	
-	private static final ImageObserver obs = (Image img, int infoflags, int x, int y,
-			int width, int height) -> ((infoflags & ImageObserver.ALLBITS) != 0);
+	private static final ImageObserver obs = new TheImageObserver();
 
 	public static BufferedImage getINT_ARGB(Image img){
 		return get(img, BufferedImage.TYPE_INT_ARGB);
