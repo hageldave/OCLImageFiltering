@@ -1,0 +1,93 @@
+package util;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.ImageObserver;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+@SuppressWarnings("serial")
+public class ImageFrame extends JFrame {
+	
+
+	private static class ImagePanel extends JPanel{
+		
+		Image img = null;
+		Point clickPoint = null;
+		ImageObserver obs = TheImageObserver.INSTANCE;
+		
+		public ImagePanel() {
+			this.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					ImagePanel.this.clickPoint = e.getPoint();
+					ImagePanel.this.repaint();
+				}
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					ImagePanel.this.clickPoint = null;
+					ImagePanel.this.repaint();
+				}
+			});
+			this.addMouseMotionListener(new MouseAdapter() {
+				@Override
+				public void mouseDragged(MouseEvent e) {
+					ImagePanel.this.clickPoint = e.getPoint();
+					ImagePanel.this.repaint();
+				}
+			});
+		}
+		
+		public void setImg(Image img) {
+			this.img = img;
+			this.repaint();
+		}
+		
+		@Override
+		public void paint(Graphics painter) {
+			super.paint(painter);
+			if(img != null){
+				if(clickPoint == null){
+					painter.drawImage(img, 0, 0, this.getWidth(), this.getHeight(), obs);
+				} else {
+					float relX = clickPoint.x / (1.0f * this.getWidth());
+					float relY = clickPoint.y / (1.0f * this.getHeight());
+					int imgW = img.getWidth(obs);
+					int imgH = img.getWidth(obs);
+					int imgX = (int) (relX*imgW);
+					int imgY = (int) (relY*imgH);
+					
+					painter.drawImage(img, 0, 0, this.getWidth(), this.getHeight(), imgX-this.getWidth()/2, imgY-this.getHeight()/2, imgX+this.getWidth()/2, imgY+this.getHeight()/2, obs);
+				}
+			}
+		}
+		
+	}
+	
+	ImagePanel panel;
+	
+	public ImageFrame() {
+		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		this.panel = new ImagePanel();
+		this.panel.setBackground(Color.magenta);
+		this.getContentPane().add(this.panel);
+		this.setMinimumSize(new Dimension(300,300));
+		this.pack();
+	}
+	
+	public void setImg(Image img){
+		panel.setImg(img);
+		this.setTitle(img.getWidth(TheImageObserver.INSTANCE) + " x " + img.getHeight(TheImageObserver.INSTANCE) + " Pixels");
+	}
+	
+	public void setPanelBGColor(Color color){
+		this.panel.setBackground(color);
+	}
+
+}
