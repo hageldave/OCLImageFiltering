@@ -59,9 +59,9 @@ public class GrayscaleFilter extends AbstractFilterCLBuffer {
 				""+
 				"int grey = ( ((r * 3)/10) + ((g * 6)/10) + (b/10) );"+
 				""+
-//				"r = grey;"+
-//				"g = grey;"+
-//				"b = grey;"+
+				"r = grey;"+
+				"g = grey;"+
+				"b = grey;"+
 				""+
 				"values[i] = (a << 24) | (r << 16) | (g << 8) | b;"+
 				"values[i] = values[i];"+

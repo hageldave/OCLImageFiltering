@@ -7,10 +7,12 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
 public class ImageFrame extends JFrame {
@@ -88,6 +90,14 @@ public class ImageFrame extends JFrame {
 	
 	public void setPanelBGColor(Color color){
 		this.panel.setBackground(color);
+	}
+	
+	public static void display(BufferedImage img){
+		SwingUtilities.invokeLater( () -> {
+			ImageFrame frame = new ImageFrame();
+			frame.setImg(img);
+			frame.setVisible(true);
+		} );
 	}
 
 }

@@ -17,6 +17,8 @@ __kernel void mask(__global int* values, __read_only image2d_t  mask, int width,
 			((maskColor.x *255 * 3)/10) + 
 			((maskColor.y *255 * 6)/10) + 
 			((maskColor.z *255)/10) ); // gray value of mask
+			
+	a = a > 0 ? (a > 255 ? 255 : a) : 0;
 
 	
 	values[i] = (a << 24) | (r << 16) | (g << 8) | b;
