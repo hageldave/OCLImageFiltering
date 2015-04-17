@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 import static sideproj.FilterTree.*;
 import sideproj.filters.ImgFilter_Bitmask;
 import sideproj.filters.ImgFilter_Grayscale;
+import sideproj.gui.ApplicationWindow;
 import sideproj.gui.FilterTreePanel;
 import util.BufferedImageFactory;
 import util.ImageFrame;
@@ -38,13 +39,10 @@ public class TestSideProj {
 			nodeBitmask.setChild(0, sourceImg);
 		}
 
-		JFrame frame = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		FilterTreePanel treePanel = new FilterTreePanel();
-		frame.setContentPane(treePanel);
-		treePanel.addTree(tree);
-		frame.pack();
-		frame.setVisible(true);
+		ApplicationWindow window = new ApplicationWindow();
+		window.getTreePanel().addTree(tree);
+		window.pack();
+		window.setVisible(true);
 //		ImageFrame.display(img.toBufferedImage());
 //		ImageFrame.display(tree.renderedImage().toBufferedImage());
 	}

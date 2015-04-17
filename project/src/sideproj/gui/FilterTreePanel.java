@@ -5,11 +5,15 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.LinkedList;
+
+import javafx.util.Pair;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -58,8 +62,13 @@ public class FilterTreePanel extends JPanel {
 			
 			new MouseDragAdapter(outConnector) {
 				@Override
+				public void mouseReleaseAction(MouseEvent e, Point delta) {
+					FilterTreePanel.this.attemptConnection(NodeWidget.this, getOutConnectorLocationOnScreen(), e.getLocationOnScreen());
+				}
+				
+				@Override
 				public void mouseDragAction(MouseEvent e, Point delta) {
-					FilterTreePanel.this.attemptConnection(NodeWidget.this, outConnector.getLocationOnScreen(), e.getLocationOnScreen());
+					FilterTreePanel.this.onConnectionDrag(getOutConnectorLocationOnScreen(), e.getLocationOnScreen());
 				}
 			};
 			
@@ -77,6 +86,16 @@ public class FilterTreePanel extends JPanel {
 			for(int i = 0; i < inConnectors.length; i++){
 				inConnectors[i] = new JLabel("}", JLabel.LEFT);
 				inPanel.add(inConnectors[i]);
+				final int index = i;
+				inConnectors[i].addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(SwingUtilities.isRightMouseButton(e)){
+							NodeWidget.this.getNode().setChild(index, null);
+							FilterTreePanel.this.repaint();
+						}
+					}
+				}); 
 			}
 			this.add(inPanel, BorderLayout.WEST);
 			
@@ -126,7 +145,8 @@ public class FilterTreePanel extends JPanel {
 	
 	// ---
 	
-	LinkedList<NodeWidget> elements = new LinkedList<FilterTreePanel.NodeWidget>();
+	private LinkedList<NodeWidget> elements = new LinkedList<FilterTreePanel.NodeWidget>();
+	private Pair<Point, Point> connectionLine = null;
 	
 	public FilterTreePanel() {
 		this.setLayout(null);
@@ -134,6 +154,7 @@ public class FilterTreePanel extends JPanel {
 		this.setPreferredSize(getMinimumSize());
 	}
 	
+
 	public void addTree(FilterTree tree){
 		for(Node node: tree.allNodes()){
 			addNode(node);
@@ -145,24 +166,26 @@ public class FilterTreePanel extends JPanel {
 		widget.setBounds(new Rectangle(new Point(0, 0), widget.getPreferredSize()));
 		elements.add(widget);
 		this.add(widget);
-		this.repaint();
+		this.validate();
 	}
 	
 	private void attemptConnection(NodeWidget sender, Point senderLocation, Point plugPoint){
 		Component component = getComponentAt(screenPointToComponentPoint(plugPoint, this));
 		if(component != null && component != this && component != sender && component instanceof NodeWidget){
 			NodeWidget widget = (NodeWidget) component;
-			System.out.println(widget);
-			System.out.println(widget.getComponentAt(screenPointToComponentPoint(plugPoint, widget)));
 			int index = widget.getInputConnectorIndex(plugPoint);
 			if(index >= 0 && !sender.getNode().getNodesRecursive().contains(widget.getNode())){	
 				widget.getNode().setChild(index, sender.getNode());
 				System.out.println("connection made" + index);
 			}
 		}
-		
-		// todo: visualize connection
+		this.connectionLine = null;
 		repaint();
+	}
+	
+	private void onConnectionDrag(Point sender, Point cursor) {
+		this.connectionLine = new Pair<Point, Point>(screenPointToComponentPoint(sender, this), screenPointToComponentPoint(cursor, this));
+		this.repaint();
 	}
 	
 	private static Point screenPointToComponentPoint(Point p, Component comp){
@@ -175,6 +198,7 @@ public class FilterTreePanel extends JPanel {
 	public void paint(Graphics g) {
 		super.paint(g);
 		// paint connections
+		((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setColor(Color.blue);
 		for(NodeWidget widget: this.elements){
 			for(int i = 0; i < widget.getNode().numRequiredChildren(); i++){
@@ -186,6 +210,10 @@ public class FilterTreePanel extends JPanel {
 				}
 			}
 		}
+		// paint drag line if in progress
+		g.setColor(Color.red);
+		if(connectionLine != null)
+			g.drawLine(connectionLine.getKey().x,connectionLine.getKey().y, connectionLine.getValue().x, connectionLine.getValue().y);
 	}
 	
 	public NodeWidget getNodeWidgetForNode(Node node){
