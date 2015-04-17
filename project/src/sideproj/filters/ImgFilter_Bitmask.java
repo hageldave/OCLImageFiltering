@@ -22,5 +22,10 @@ public class ImgFilter_Bitmask extends ImgFilter {
 	public static ImgFilter getInstance(int bitmask) {
 		return new ImgFilter_Bitmask(bitmask);
 	}
+
+	@Override
+	public String filterName() {
+		return "Bitmask Filter";
+	}
 	
 }

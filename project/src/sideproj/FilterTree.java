@@ -1,5 +1,11 @@
 package sideproj;
 
+import java.awt.Component;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.swing.JLabel;
+
 public class FilterTree {
 	
 	public static abstract class Node {
@@ -59,6 +65,7 @@ public class FilterTree {
 		}
 		
 		public abstract Img renderedImage();
+		public abstract Component getEditor();
 	}
 	
 	// ---
@@ -75,6 +82,11 @@ public class FilterTree {
 		@Override
 		public Img renderedImage() {
 			return this.img.copy();
+		}
+
+		@Override
+		public Component getEditor() {
+			return new JLabel("Source");
 		}
 	}
 	
@@ -95,6 +107,11 @@ public class FilterTree {
 			Img img = getChild(0).renderedImage();
 			this.filter.applyTo(img);
 			return img;
+		}
+
+		@Override
+		public Component getEditor() {
+			return new JLabel(filter.filterName());
 		}
 		
 	}
@@ -117,6 +134,11 @@ public class FilterTree {
 			merge.merge(img0, img1);
 			return img0;
 		}
+
+		@Override
+		public Component getEditor() {
+			return new JLabel("Image Merger");
+		}
 		
 	}
 	
@@ -130,6 +152,11 @@ public class FilterTree {
 			@Override
 			public Img renderedImage() {
 				return getChild(0).renderedImage();
+			}
+
+			@Override
+			public Component getEditor() {
+				return new JLabel("Root");
 			}
 		};
 	}
@@ -153,6 +180,23 @@ public class FilterTree {
 	public Img renderedImage() {
 		assert(allChildrenSetRecursive());
 		return root.renderedImage();
+	}
+	
+	public List<Node> allNodes(){
+		LinkedList<Node> nodes = new LinkedList<Node>();
+		searchNodesBFS(getRoot(), nodes);
+		return nodes;
+	}
+	
+	public static void searchNodesBFS(Node startNode, List<Node> foundNodes){
+		if(foundNodes.contains(startNode)){
+			return;
+		} else {
+			foundNodes.add(startNode);
+			for(Node child: startNode.children){
+				searchNodesBFS(child, foundNodes);
+			}
+		}
 	}
 	
 	

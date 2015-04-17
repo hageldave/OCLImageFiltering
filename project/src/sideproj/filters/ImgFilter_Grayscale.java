@@ -17,4 +17,9 @@ public class ImgFilter_Grayscale extends ImgFilter {
 	public static ImgFilter getInstance() {
 		return new ImgFilter_Grayscale();
 	}
+
+	@Override
+	public String filterName() {
+		return "Grayscale Filter";
+	}
 }

@@ -3,10 +3,12 @@ package sideproj;
 import java.awt.image.BufferedImage;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 
 import static sideproj.FilterTree.*;
 import sideproj.filters.ImgFilter_Bitmask;
 import sideproj.filters.ImgFilter_Grayscale;
+import sideproj.gui.FilterTreePanel;
 import util.BufferedImageFactory;
 import util.ImageFrame;
 
@@ -34,10 +36,16 @@ public class TestSideProj {
 			nodeMerge.setChild(1, nodeGrayscale);
 			nodeGrayscale.setChild(0, nodeBitmask);
 			nodeBitmask.setChild(0, sourceImg);
-			System.out.println(tree.allChildrenSetRecursive());
 		}
 
-		ImageFrame.display(img.toBufferedImage());
-		ImageFrame.display(tree.renderedImage().toBufferedImage());
+		JFrame frame = new JFrame();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		FilterTreePanel treePanel = new FilterTreePanel();
+		frame.setContentPane(treePanel);
+		treePanel.addTree(tree);
+		frame.pack();
+		frame.setVisible(true);
+//		ImageFrame.display(img.toBufferedImage());
+//		ImageFrame.display(tree.renderedImage().toBufferedImage());
 	}
 }
