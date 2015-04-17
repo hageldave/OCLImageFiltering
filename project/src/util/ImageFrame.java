@@ -18,7 +18,7 @@ import javax.swing.SwingUtilities;
 public class ImageFrame extends JFrame {
 	
 
-	private static class ImagePanel extends JPanel{
+	public static class ImagePanel extends JPanel{
 		
 		Image img = null;
 		Point clickPoint = null;
@@ -28,20 +28,26 @@ public class ImageFrame extends JFrame {
 			this.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
-					ImagePanel.this.clickPoint = e.getPoint();
-					ImagePanel.this.repaint();
+					if(e.getButton() == MouseEvent.BUTTON1){
+						ImagePanel.this.clickPoint = e.getPoint();
+						ImagePanel.this.repaint();
+					}
 				}
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					ImagePanel.this.clickPoint = null;
-					ImagePanel.this.repaint();
+					if(e.getButton() == MouseEvent.BUTTON1){
+						ImagePanel.this.clickPoint = null;
+						ImagePanel.this.repaint();
+					}
 				}
 			});
 			this.addMouseMotionListener(new MouseAdapter() {
 				@Override
 				public void mouseDragged(MouseEvent e) {
-					ImagePanel.this.clickPoint = e.getPoint();
-					ImagePanel.this.repaint();
+					if(clickPoint != null){
+						ImagePanel.this.clickPoint = e.getPoint();
+						ImagePanel.this.repaint();
+					}
 				}
 			});
 		}

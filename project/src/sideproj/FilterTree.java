@@ -64,6 +64,12 @@ public class FilterTree {
 			return false;
 		}
 		
+		public List<Node> getNodesRecursive(){
+			LinkedList<Node> nodes = new LinkedList<>();
+			searchNodesBFS(this, nodes);
+			return nodes;
+		}
+		
 		public abstract Img renderedImage();
 		public abstract Component getEditor();
 	}
