@@ -22,4 +22,9 @@ public class ImgFilter_Grayscale extends ImgFilter {
 	public String filterName() {
 		return "Grayscale Filter";
 	}
+
+	@Override
+	public ImgFilter copy() {
+		return new ImgFilter_Grayscale();
+	}
 }

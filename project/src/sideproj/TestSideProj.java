@@ -25,22 +25,27 @@ public class TestSideProj {
 		ImgFilter_Grayscale.getInstance().applyTo(img);
 		ImgMerge.getInstance().merge(img, tmp);
 		
-		FilterTree tree = new FilterTree();
-		Node sourceImg = new Source(img2);
-		Node nodeGrayscale = new FilterNode(ImgFilter_Grayscale.getInstance());
-		Node nodeBitmask = new FilterNode(ImgFilter_Bitmask.getInstance(0xff0000));
-		Node nodeMerge = new MergeNode(ImgMerge.getInstance());
+//		FilterTree tree = new FilterTree();
+//		Node sourceImg = new Source(img2);
+//		Node nodeGrayscale = new FilterNode(ImgFilter_Grayscale.getInstance());
+//		Node nodeBitmask = new FilterNode(ImgFilter_Bitmask.getInstance(0xff0000));
+//		Node nodeMerge = new MergeNode(ImgMerge.getInstance());
+//		
+//		{ // build tree
+//			tree.setRoot(nodeMerge);
+//			nodeMerge.setChild(0, nodeBitmask);
+//			nodeMerge.setChild(1, nodeGrayscale);
+//			nodeGrayscale.setChild(0, nodeBitmask);
+//			nodeBitmask.setChild(0, sourceImg);
+//		}
 		
-		{ // build tree
-			tree.setRoot(nodeMerge);
-			nodeMerge.setChild(0, nodeBitmask);
-			nodeMerge.setChild(1, nodeGrayscale);
-			nodeGrayscale.setChild(0, nodeBitmask);
-			nodeBitmask.setChild(0, sourceImg);
-		}
+		FilterTree initialTree = new FilterTree();
+		initialTree.getRoot().setChild(0, new Source(img2));
 
 		ApplicationWindow window = new ApplicationWindow();
-		window.getTreePanel().addTree(tree);
+		window.registerFilter(new ImgFilter_Bitmask());
+		window.registerFilter(new ImgFilter_Grayscale());
+		window.getTreePanel().addTree(initialTree);
 		window.pack();
 		window.setVisible(true);
 //		ImageFrame.display(img.toBufferedImage());

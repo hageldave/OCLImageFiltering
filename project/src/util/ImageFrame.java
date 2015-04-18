@@ -62,7 +62,7 @@ public class ImageFrame extends JFrame {
 			super.paint(painter);
 			if(img != null){
 				if(clickPoint == null){
-					painter.drawImage(img, 0, 0, this.getWidth(), this.getHeight(), obs);
+					painter.drawImage(img, 0, 0, this.getWidth(), this.getHeight(), 0, 0, img.getWidth(obs), img.getHeight(obs), obs);
 				} else {
 					float relX = clickPoint.x / (1.0f * this.getWidth());
 					float relY = clickPoint.y / (1.0f * this.getHeight());

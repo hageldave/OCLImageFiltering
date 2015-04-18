@@ -1,10 +1,18 @@
 package sideproj;
 
+import java.awt.Component;
+
 public abstract class ImgFilter {
 	
 	public abstract void applyTo(Img img);
 	
 	public abstract String filterName();
+	
+	public Component getEditor(){
+		return null;
+	}
+	
+	public abstract ImgFilter copy();
 	
 	public static int a(int color){
 		return (color >> 24) & 0xff;

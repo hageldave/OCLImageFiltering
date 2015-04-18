@@ -1,10 +1,18 @@
 package sideproj;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import sideproj.ImgMerge.MergePolicy;
+import sideproj.gui.EasyListCellRenderer;
 
 public class FilterTree {
 	
@@ -117,7 +125,12 @@ public class FilterTree {
 
 		@Override
 		public Component getEditor() {
-			return new JLabel(filter.filterName());
+			JPanel panel = new JPanel(new BorderLayout());
+			panel.add(new JLabel(filter.filterName()), BorderLayout.NORTH);
+			if(filter.getEditor() != null){
+				panel.add(filter.getEditor(), BorderLayout.CENTER);
+			}
+			return panel;
 		}
 		
 	}
@@ -127,6 +140,7 @@ public class FilterTree {
 	public static class MergeNode extends Node {
 		
 		private ImgMerge merge;
+		private JComboBox<ImgMerge.MergePolicy> policyCbx = null;
 		
 		public MergeNode(ImgMerge merge) {
 			super(2);
@@ -143,7 +157,20 @@ public class FilterTree {
 
 		@Override
 		public Component getEditor() {
-			return new JLabel("Image Merger");
+			if(policyCbx == null){
+				policyCbx = new JComboBox<>(ImgMerge.MergePolicy.values());
+				policyCbx.setSelectedIndex(merge.getMergePolicy().ordinal());
+				policyCbx.setRenderer(new EasyListCellRenderer<MergePolicy>());
+				policyCbx.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						MergePolicy policy = (MergePolicy) policyCbx.getSelectedItem();
+						if(policy != null)
+							merge.setMergePolicy(policy);
+					}
+				});
+			}
+			return policyCbx;
 		}
 		
 	}
